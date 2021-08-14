@@ -4,6 +4,9 @@ library(ggplot2)
 library(dpylr)
 library(stringr)
 library(ggthemes)
+library(htmlwidgets)
+library(plotly)
+
 
 aave_data = read.csv("./data/compound.csv")
 
@@ -46,9 +49,12 @@ ggplot(compound_asset, aes(x = datetime, y=value, group=ticker)) +
   scale_colour_economist()
 
 # 예치된 asset 그래프 (로그스케일, solarized 테마)
-ggplot(compound_asset, aes(x = datetime, y=value, group=ticker)) +
+test <- ggplot(compound_asset, aes(x = datetime, y=value, group=ticker)) +
   geom_line(aes(col=ticker)) +
   scale_y_log10() +
   ggtitle("Assets deposited in Compound") +
-  theme_solarized(light=FALSE) + 
+  theme_solarized(light = FALSE) + 
   scale_colour_solarized('blue')
+
+ggplotly(test)
+
