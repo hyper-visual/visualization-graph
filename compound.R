@@ -8,7 +8,7 @@ library(htmlwidgets)
 library(plotly)
 
 
-aave_data = read.csv("./data/compound.csv")
+compound_data = read.csv("./data/compound.csv")
 
 realtime = compound_data %>% 
   mutate(datetime = as.POSIXct(timestamp, origin="1970-01-01"))
