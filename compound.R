@@ -7,7 +7,6 @@ library(ggthemes)
 library(htmlwidgets)
 library(plotly)
 
-
 compound_data = read.csv("./data/compound.csv")
 
 realtime = compound_data %>% 

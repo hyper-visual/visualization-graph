@@ -64,16 +64,16 @@ maker <- ggplot(maker_dao_user, aes(x = date, y=users, group=1)) +
   scale_colour_solarized('blue')
 
 # 세 프로토콜 유저 수 stack 그래프
-total <- ggplot(total_user, aes(x = date, y=users, fill=protocol)) +
-  geom_col(position="stack") +
+total <- ggplot(total_user, aes(x = date, y=users, col=protocol)) +
+  geom_line(aes(col=protocol)) +
   ggtitle("Total users") +
   theme_solarized_2() + 
-  scale_fill_manual(values=c(violet,cyan,yellow)) +
+  scale_color_manual(values=c(violet,cyan,yellow)) +
   scale_y_continuous(labels = function(x) format(x, scientific = FALSE))
 
 # 세 프로토콜 유저 수 비율 그래프
 total_proportion <- ggplot(total_user, aes(x = date, y=users, fill=protocol)) +
-  geom_bar(position="fill", stat="identity",) +
+  geom_bar(position="fill", stat="identity") +
   ggtitle("Total users proportion") +
   theme_solarized() + 
   scale_fill_manual(values=c(violet,cyan,yellow)) +
