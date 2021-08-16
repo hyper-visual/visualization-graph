@@ -8,19 +8,19 @@ library(htmlwidgets)
 library(plotly)
 library(scales)
 
-maker_data = read.csv("./data/maker_dao.csv")
+maker_data = read.csv("./data/maker.csv")
 
-realtime = maker_data %>% 
+maker_realtime = maker_data %>% 
   mutate(datetime = as.POSIXct(timestamp, origin="1970-01-01"))
 
 # tvl data 전처리
-maker_tvl = realtime %>%
+maker_tvl = maker_realtime %>%
   select(datetime, tvlUSD, tvlETH) %>%
   transform(tvlETH = strtoi(str_split(tvlETH, pattern=fixed("."),n=2,simplify=TRUE)[,1])) %>%
   gather("currency", "value", 2:3)
 
 # asset data 전처리
-maker_asset = realtime %>% 
+maker_asset = maker_realtime %>% 
   select(datetime, wBTC, wETH, DAI) %>%
   gather("ticker", "value", 2:4)
 
