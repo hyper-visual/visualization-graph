@@ -24,12 +24,13 @@ aave_asset = realtime %>%
   select(datetime, wBTC, wETH, DAI) %>%
   gather("ticker", "value", 2:4)
 
+options(scipen=999)
 
 # tvl 그래프 (로그스케일, solarized 테마)
 tvl <- ggplot(aave_tvl, aes(x=datetime, y=value, col=currency)) +
   geom_line(aes(color=currency)) +
   ggtitle("Aave TVL") +
-  scale_y_log10() +
+  scale_y_log10(breaks = 10^(0:10)) +
   theme_solarized() + 
   scale_colour_solarized('blue') 
 
@@ -37,9 +38,9 @@ tvl <- ggplot(aave_tvl, aes(x=datetime, y=value, col=currency)) +
 asset <- ggplot(aave_asset, aes(x = datetime, y=value, col=ticker)) +
   geom_line(aes(col=ticker)) +
   ggtitle("Assets deposited in Aave") +
-  scale_y_log10() +
   theme_solarized() + 
-  scale_colour_solarized('blue') 
-
+  scale_colour_solarized('blue') +
+  scale_y_log10(breaks = 10^(0:9)) 
+  
 ggplotly(tvl)
 ggplotly(asset)
