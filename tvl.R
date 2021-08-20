@@ -6,6 +6,7 @@ library(stringr)
 library(ggthemes)
 library(lubridate)
 library(plotly)
+library(scales)
 
 yellow <-"#b58900"
 orange <-"#cb4b16"
@@ -16,81 +17,73 @@ blue <- "#268bd2"
 cyan <- "#2aa198"
 green <- "#859900"
 
-aave_tvl = read.csv("./data/aave.csv") %>% 
-  mutate(datetime = as.POSIXct(timestamp, origin="1970-01-01")) %>%
-  select(datetime, tvlUSD, tvlETH) %>%
+aave_data = read.csv("./data/aave.csv") %>% 
+  mutate(date = as.POSIXct(timestamp, origin="1970-01-01")) %>%
+  select(date, tvlUSD, tvlETH) %>%
   transform(tvlETH = strtoi(str_split(tvlETH, pattern=fixed("."),n=2,simplify=TRUE)[,1]))
 
-compound_tvl = read.csv("./data/compound.csv") %>% 
-  mutate(datetime = as.POSIXct(timestamp, origin="1970-01-01")) %>%
-  select(datetime, tvlUSD, tvlETH) %>%
-  transform(tvlETH = strtoi(str_split(tvlETH, pattern=fixed("."),n=2,simplify=TRUE)[,1])) %>%
-  gather("currency", "value", 2:3)
+aave_tvl_usd = aave_data %>%
+  select(date, tvlUSD)
+colnames(aave_tvl_usd)[2]<-"Aave"
 
-maker_tvl = read.csv("./data/maker.csv") %>% 
-  mutate(datetime = as.POSIXct(timestamp, origin="1970-01-01")) %>%
-  select(datetime, tvlUSD, tvlETH) %>%
-  transform(tvlETH = strtoi(str_split(tvlETH, pattern=fixed("."),n=2,simplify=TRUE)[,1])) %>%
-  gather("currency", "value", 2:3)
+aave_tvl_eth = aave_data %>%
+  select(date, tvlETH)
+colnames(aave_tvl_eth)[2]<-"Aave"
 
-aave_user = aave_user %>%
-  transform(date = ymd(str_split(date, pattern=fixed(" "),n=2,simplify=TRUE)[,1])) 
+compound_data = read.csv("./data/compound.csv") %>% 
+  mutate(date = as.POSIXct(timestamp, origin="1970-01-01")) %>%
+  select(date, tvlUSD, tvlETH) %>%
+  transform(tvlETH = strtoi(str_split(tvlETH, pattern=fixed("."),n=2,simplify=TRUE)[,1]))
 
-colnames(aave_user)[2]<-"aave"
+compound_tvl_usd = compound_data %>%
+  select(date, tvlUSD)
+colnames(compound_tvl_usd)[2]<-"Compound"
 
-compound_user = compound_user %>% 
-  transform(date = ymd(str_split(date, pattern=fixed(" "),n=2,simplify=TRUE)[,1])) 
+compound_tvl_eth = compound_data %>%
+  select(date, tvlETH)
+colnames(compound_tvl_eth)[2]<-"Compound"
 
-colnames(compound_user)[2]<-"compound"
+maker_data = read.csv("./data/maker.csv") %>% 
+  mutate(date = as.POSIXct(timestamp, origin="1970-01-01")) %>%
+  select(date, tvlUSD, tvlETH) %>%
+  transform(tvlETH = strtoi(str_split(tvlETH, pattern=fixed("."),n=2,simplify=TRUE)[,1]))
+
+maker_tvl_usd = maker_data %>%
+  select(date, tvlUSD)
+colnames(maker_tvl_usd)[2]<-"MakerDAO"
+
+maker_tvl_eth = maker_data %>%
+  select(date, tvlETH)
+colnames(maker_tvl_eth)[2]<-"MakerDAO"
+
+total_tvl_usd = left_join(maker_tvl_usd, compound_tvl_usd, by="date") %>%
+  left_join(aave_tvl_usd, by="date") %>%
+  gather("protocol", "tvl", 2:4)
+
+total_tvl_eth = left_join(maker_tvl_eth, compound_tvl_eth, by="date") %>%
+  left_join(aave_tvl_eth, by="date") %>%
+  gather("protocol", "tvl", 2:4)
 
 
-maker_dao_user = maker_dao_user %>% 
-  transform(date = ymd(str_split(date, pattern=fixed(" "),n=2,simplify=TRUE)[,1]))
-
-colnames(maker_dao_user)[2]<-"makerDAO"
-
-
-total_tvl = left_join(maker_tvl, compound_tvl, by="date") %>%
-  left_join(aave_tvl, by="date") %>%
-  gather("protocol", "users", 2:4)
-
-
-# aave 유저수 그래프
-aave <- ggplot(aave_user, aes(x = date, y=users, group=1)) +
-  geom_line() +
-  ggtitle("Aave users") +
-  theme_solarized() + 
-  scale_colour_solarized('blue')
-
-# compound 유저수 그래프
-compound <- ggplot(compound_user, aes(x = date, y=users, group=1)) +
-  geom_line() +
-  ggtitle("Compound users") +
-  theme_solarized() + 
-  scale_colour_solarized('blue')
-
-# makerDAO 유저수 그래프
-maker <- ggplot(maker_dao_user, aes(x = date, y=users, group=1)) +
-  geom_line() +
-  ggtitle("MakerDAO users") +
-  theme_solarized() + 
-  scale_colour_solarized('blue')
-
-# 세 프로토콜 유저 수 stack 그래프
-total <- ggplot(total_user, aes(x = date, y=users, col=protocol)) +
-  geom_line(aes(col=protocol)) +
-  ggtitle("Total users") +
+# usd 기준 tvl 그래프
+usd <- ggplot(total_tvl_usd, aes(x=date, y=tvl, col=protocol)) +
+  geom_line(aes(color=protocol)) +
+  ggtitle("Total Value Locked (USD)") +
+  ylab("Total Value Locked in USD") +
+  xlab("Date") +
+  scale_y_continuous(labels = label_number(suffix = " B", scale = 1e-9)) +
   theme_solarized_2() + 
-  scale_color_manual(values=c(violet,cyan,yellow)) +
-  scale_y_continuous(labels = function(x) format(x, scientific = FALSE))
-
-# 세 프로토콜 유저 수 비율 그래프
-total_proportion <- ggplot(total_user, aes(x = date, y=users, fill=protocol)) +
-  geom_bar(position="fill", stat="identity") +
-  ggtitle("Total users proportion") +
-  theme_solarized() + 
-  scale_fill_manual(values=c(violet,cyan,yellow)) +
-  scale_y_continuous(labels = scales::percent_format())
-
-ggplotly(total)
-ggplotly(total_proportion)
+  scale_color_manual(values=c(violet,cyan,yellow))
+  
+# eth 기준 tvl 그래프
+eth <- ggplot(total_tvl_eth, aes(x=date, y=tvl, col=protocol)) +
+  geom_line(aes(color=protocol)) +
+  ggtitle("Total Value Locked (ETH)") +
+  ylab("Total Value Locked in ETH") +
+  xlab("Date") +
+  scale_y_continuous(labels = label_number(suffix = " M", scale = 1e-6)) +
+  theme_solarized_2() + 
+  scale_color_manual(values=c(violet,cyan,yellow))
+  
+ggplotly(usd)
+ggplotly(eth)
