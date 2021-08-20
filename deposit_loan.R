@@ -6,6 +6,8 @@ library(stringr)
 library(ggthemes)
 library(lubridate)
 library(plotly)
+library(scales)
+
 
 yellow <-"#b58900"
 orange <-"#cb4b16"
@@ -35,7 +37,7 @@ aave_loan <- ggplot(aave_loan_data, aes(x=date, y=value, col=division)) +
   ggtitle("Aave Deposits & Loans in USD") +
   ylab("Value in USD") +
   xlab("Date") +
-  theme_solarized() + 
+  theme_solarized_2() + 
   scale_colour_solarized('violet')  +
   scale_y_continuous(labels = label_number(suffix = " B", scale = 1e-9))
 
@@ -44,7 +46,7 @@ compound_loan <- ggplot(compound_loan_data, aes(x=date, y=value, col=division)) 
   ggtitle("Compound Deposits & Loans in USD") +
   ylab("Value in USD") +
   xlab("Date") +
-  theme_solarized() + 
+  theme_solarized_2() + 
   scale_colour_solarized('cyan') +
   scale_y_continuous(labels = label_number(suffix = " B", scale = 1e-9))
 
@@ -53,7 +55,7 @@ maker_loan <- ggplot(maker_loan_data, aes(x=date, y=value, col=division)) +
   ggtitle("MakerDAO Deposits & Loans in USD") +
   ylab("Value in USD") +
   xlab("Date") +
-  theme_solarized() + 
+  theme_solarized_2() + 
   scale_colour_solarized('yellow')  +
   scale_y_continuous(labels = label_number(suffix = " B", scale = 1e-9))
 

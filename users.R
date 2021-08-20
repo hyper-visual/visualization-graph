@@ -23,18 +23,18 @@ maker_dao_user = read.csv("./data/maker_dao_users.csv")
 aave_user = aave_user %>%
   transform(date = ymd(str_split(date, pattern=fixed(" "),n=2,simplify=TRUE)[,1])) 
 
-colnames(aave_user)[2]<-"aave"
+colnames(aave_user)[2]<-"Aave"
 
 compound_user = compound_user %>% 
   transform(date = ymd(str_split(date, pattern=fixed(" "),n=2,simplify=TRUE)[,1])) 
 
-colnames(compound_user)[2]<-"compound"
+colnames(compound_user)[2]<-"Compound"
 
 
 maker_dao_user = maker_dao_user %>% 
   transform(date = ymd(str_split(date, pattern=fixed(" "),n=2,simplify=TRUE)[,1]))
 
-colnames(maker_dao_user)[2]<-"makerDAO"
+colnames(maker_dao_user)[2]<-"MakerDAO"
 
 
 total_user = left_join(maker_dao_user, compound_user, by="date") %>%
@@ -66,15 +66,19 @@ maker <- ggplot(maker_dao_user, aes(x = date, y=users, group=1)) +
 # 세 프로토콜 유저 수 stack 그래프
 total <- ggplot(total_user, aes(x = date, y=users, col=protocol)) +
   geom_line(aes(col=protocol)) +
-  ggtitle("Total users") +
+  ggtitle("Total Users") +
+  ylab("User Count") +
+  xlab("Date") +
   theme_solarized_2() + 
   scale_color_manual(values=c(violet,cyan,yellow)) +
-  scale_y_continuous(labels = function(x) format(x, scientific = FALSE))
+  scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3))
 
 # 세 프로토콜 유저 수 비율 그래프
 total_proportion <- ggplot(total_user, aes(x = date, y=users, fill=protocol)) +
   geom_bar(position="fill", stat="identity") +
-  ggtitle("Total users proportion") +
+  ggtitle("Total Users Proportion") +
+  ylab("User Proportion") +
+  xlab("Date") +
   theme_solarized() + 
   scale_fill_manual(values=c(violet,cyan,yellow)) +
   scale_y_continuous(labels = scales::percent_format())

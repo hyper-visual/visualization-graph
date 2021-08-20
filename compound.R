@@ -15,8 +15,8 @@ compound_realtime = compound_data %>%
 
 # tvl data 전처리
 compound_tvl = compound_realtime %>%
-  select(datetime, tvlUSD, tvlETH) %>%
-  transform(tvlETH = strtoi(str_split(tvlETH, pattern=fixed("."),n=2,simplify=TRUE)[,1])) %>%
+  select(datetime, USD, ETH) %>%
+  transform(ETH = strtoi(str_split(ETH, pattern=fixed("."),n=2,simplify=TRUE)[,1])) %>%
   gather("currency", "value", 2:3)
 
 # asset data 전처리
@@ -27,20 +27,28 @@ compound_asset = compound_realtime %>%
 options(scipen=999)
 
 # tvl 그래프 (로그스케일, solarized 테마)
-tvl <- ggplot(compound_tvl, aes(x=datetime, y=value, col=currency)) +
+ggplot(compound_tvl, aes(x=datetime, y=value, col=currency)) +
   geom_line(aes(color=currency)) +
   ggtitle("Compound TVL") +
-  scale_y_log10(breaks = 10^(0:10)) +
-  theme_solarized() + 
+#  ylab("Value") +
+  ylab("Value in log scale") +
+  xlab("Date") +
+  scale_y_log10(breaks = 10^(0:11), labels = trans_format("log10", math_format(10^.x))) +
+#  scale_y_continuous(labels = label_number(suffix = " B", scale = 1e-9)) +
+  theme_solarized_2() + 
   scale_colour_solarized('blue') 
 
 # 예치된 asset 그래프 (로그스케일, solarized 테마)
-asset <- ggplot(compound_asset, aes(x = datetime, y=value, col=ticker)) +
+ggplot(compound_asset, aes(x = datetime, y=value, col=ticker)) +
   geom_line(aes(col=ticker)) +
   ggtitle("Assets deposited in Compound") +
-  theme_solarized() + 
-  scale_colour_solarized('blue') +
-  scale_y_log10(breaks = 10^(0:9)) 
+  ylab("Value in log scale") +
+#  ylab("Value") +
+  xlab("Date") +
+  theme_solarized_2() + 
+  scale_color_manual(values=c(cyan,yellow,blue)) +
+#  scale_y_continuous(labels = label_number(suffix = " B", scale = 1e-9))
+  scale_y_log10(breaks = 10^(-9:9), labels = trans_format("log10", math_format(10^.x))) 
 
-ggplotly(tvl)
-ggplotly(asset)
+#ggplotly(tvl)
+#ggplotly(asset)
